@@ -1,3 +1,5 @@
+#/!/usr/bin/env python
+
 import sys
 sys.path.append('../Scripts/')
 from PyQt5.QtGui import *

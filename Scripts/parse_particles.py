@@ -30,7 +30,7 @@ def parse_particles(fp, entry_name):
     if not (os.path.isfile(fp) or ext == '.star' and ext == '.cs'):
         raise Exception('Please provide a valid Relion .star or CryoSparc .cs file.')
 
-    db_loc = '/net/jiang/home/zaw/scratch/ONN_DATABASE_PARSER/Database/'
+    db_loc = '../Database/'
     entry_path = os.path.join(db_loc, entry_name)
     if os.path.isdir(entry_path):
         raise Exception('An entry with the given name already exists in the database. Please choose another.')
