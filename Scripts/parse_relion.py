@@ -31,12 +31,12 @@ def parse_relion(fp):
 
     # Check that the STAR file has the following necessary parameters for particles
     parameter_list = ['rlnCoordinateX', 'rlnCoordinateY', 'rlnMicrographName']
-    assert(len(star_dict['rlnCoordinateX']) == len(star_dict['rlnCoordinateY']) == len(star_dict['rlnMicrographName'])) # sanity check
     for parameter in parameter_list:
         if parameter in star_dict:
             training_data_dict[parameter] = star_dict[parameter]
         else:
             raise Exception('STAR file is missing necessary parameter: %s' % parameter)
+    assert(len(star_dict['rlnCoordinateX']) == len(star_dict['rlnCoordinateY']) == len(star_dict['rlnMicrographName'])) # sanity check
 
     return training_data_dict
 
