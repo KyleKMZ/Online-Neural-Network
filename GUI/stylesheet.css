@@ -1,0 +1,49 @@
+QMainWindow {
+	background-color: #e6e6e6;
+}
+
+QPushButton {
+	font-size: 14px;
+	font-family: Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	color: white;
+	background-color: #8c1eaa;
+	border-radius: 10px;
+}
+
+QPushButton:hover {
+	font-size: 14px;
+	font-family: Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	color: #8c1eaa;
+	background-color: white;
+	border-radius: 10px;
+}
+
+QLabel {
+	font-family: Georgia, sans-serif;
+	font-size: 14px;
+	font-family: Helvetica, Arial, sans-serif;
+	color: black;
+}
+
+QLabel#metaLabel, QLabel#infoLabel, QLabel#dbLabel {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+QListView {
+	background-color: lightyellow;
+	border: 3px solid black;
+	font-size: 18px;
+}
+
+QListView::item {
+	padding: 5px 1px 1px 5px;
+}
+
+QListView::item:selected {
+	color: black;
+	font-size: 18px;
+	font-weight: bold;
+}

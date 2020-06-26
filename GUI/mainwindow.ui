@@ -53,7 +53,7 @@
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>270</y>
+      <y>390</y>
       <width>131</width>
       <height>51</height>
      </rect>
@@ -66,20 +66,20 @@
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>390</y>
+      <y>510</y>
       <width>131</width>
       <height>51</height>
      </rect>
     </property>
     <property name="text">
-     <string>Custom Databases</string>
+     <string>Databases</string>
     </property>
    </widget>
    <widget class="QPushButton" name="trainNNBtn">
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>510</y>
+      <y>630</y>
       <width>131</width>
       <height>51</height>
      </rect>
@@ -92,7 +92,7 @@
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>630</y>
+      <y>750</y>
       <width>131</width>
       <height>51</height>
      </rect>
@@ -104,9 +104,9 @@
    <widget class="QComboBox" name="dbComboBox">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>20</y>
-      <width>441</width>
+      <x>420</x>
+      <y>10</y>
+      <width>421</width>
       <height>50</height>
      </rect>
     </property>
@@ -141,8 +141,8 @@
     <property name="geometry">
      <rect>
       <x>320</x>
-      <y>30</y>
-      <width>61</width>
+      <y>25</y>
+      <width>121</width>
       <height>21</height>
      </rect>
     </property>
@@ -153,24 +153,24 @@
    <widget class="QListView" name="entryListView">
     <property name="geometry">
      <rect>
-      <x>300</x>
-      <y>100</y>
-      <width>550</width>
-      <height>740</height>
+      <x>290</x>
+      <y>69</y>
+      <width>571</width>
+      <height>781</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="helpBtn">
+   <widget class="QPushButton" name="deleteBtn">
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>750</y>
+      <y>270</y>
       <width>131</width>
       <height>51</height>
      </rect>
     </property>
     <property name="text">
-     <string>Help</string>
+     <string>Delete Entry</string>
     </property>
    </widget>
    <widget class="QLabel" name="metaLabel">
@@ -178,7 +178,7 @@
      <rect>
       <x>1000</x>
       <y>30</y>
-      <width>55</width>
+      <width>91</width>
       <height>16</height>
      </rect>
     </property>
@@ -191,7 +191,7 @@
      <rect>
       <x>920</x>
       <y>90</y>
-      <width>55</width>
+      <width>111</width>
       <height>16</height>
      </rect>
     </property>
@@ -204,7 +204,7 @@
      <rect>
       <x>870</x>
       <y>140</y>
-      <width>151</width>
+      <width>161</width>
       <height>16</height>
      </rect>
     </property>
@@ -238,52 +238,12 @@
      <string>E- Dose</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="voltageLineEdit">
-    <property name="geometry">
-     <rect>
-      <x>1040</x>
-      <y>90</y>
-      <width>141</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="csLineEdit">
-    <property name="geometry">
-     <rect>
-      <x>1040</x>
-      <y>140</y>
-      <width>141</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="psizeLineEdit">
-    <property name="geometry">
-     <rect>
-      <x>1040</x>
-      <y>190</y>
-      <width>141</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="doseLineEdit">
-    <property name="geometry">
-     <rect>
-      <x>1040</x>
-      <y>240</y>
-      <width>141</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="Line" name="line_3">
     <property name="geometry">
      <rect>
-      <x>850</x>
+      <x>860</x>
       <y>290</y>
-      <width>351</width>
+      <width>341</width>
       <height>20</height>
      </rect>
     </property>
@@ -309,7 +269,7 @@
      <rect>
       <x>900</x>
       <y>360</y>
-      <width>91</width>
+      <width>151</width>
       <height>16</height>
      </rect>
     </property>
@@ -320,9 +280,9 @@
    <widget class="QLabel" name="numParticlesLabel">
     <property name="geometry">
      <rect>
-      <x>1090</x>
+      <x>1110</x>
       <y>360</y>
-      <width>55</width>
+      <width>110</width>
       <height>16</height>
      </rect>
     </property>
@@ -335,7 +295,7 @@
      <rect>
       <x>890</x>
       <y>410</y>
-      <width>111</width>
+      <width>161</width>
       <height>16</height>
      </rect>
     </property>
@@ -346,9 +306,61 @@
    <widget class="QLabel" name="numMicsLabel">
     <property name="geometry">
      <rect>
-      <x>1090</x>
+      <x>1110</x>
       <y>410</y>
-      <width>55</width>
+      <width>110</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="voltageValue">
+    <property name="geometry">
+     <rect>
+      <x>1110</x>
+      <y>90</y>
+      <width>110</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="csValue">
+    <property name="geometry">
+     <rect>
+      <x>1110</x>
+      <y>140</y>
+      <width>110</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="doseValue">
+    <property name="geometry">
+     <rect>
+      <x>1110</x>
+      <y>240</y>
+      <width>110</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="psizeValue">
+    <property name="geometry">
+     <rect>
+      <x>1110</x>
+      <y>190</y>
+      <width>110</width>
       <height>16</height>
      </rect>
     </property>
