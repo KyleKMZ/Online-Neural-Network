@@ -27,7 +27,7 @@ def main():
 def parse_particles(fp, entry_name):
  
     ext = os.path.splitext(fp)[-1].lower()
-    if not (os.path.isfile(fp) or ext == '.star' and ext == '.cs'):
+    if not os.path.isfile(fp) or ext != '.star' or ext != '.cs'):
         raise Exception('Please provide a valid Relion .star or CryoSparc .cs file.')
 
     db_loc = '../Database/'
@@ -192,6 +192,82 @@ def parse_particles(fp, entry_name):
 
         info_f.close()
         data_f.close()
+
+def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_dir, copy_mics = False):
+    # Implementation of parse_particles used for parsing particle data
+    # by their Relion or CSparc project folder hierarchically
+    # particles_fp: input particle file -> .STAR or .CS
+    # data_output_dir: directory to save particle data files info.txt and data.txt
+    # mics_output_dir: directory to save micrographs that contains the particles
+    # copy_mics: if set to False (default), micrographs are symbolically linked instead of hard-copied
+
+    ext = os.path.splitext(fp)[-1].lower()
+    if not os.path.isfile(fp) or ext != '.star' or ext != '.cs':
+        raise Exception('Please provide a valid Relion .star or CryoSparc .cs file.')
+
+    if (ext == '.star'):
+        data_dict = parse_relion(fp)
+        # Write training data info to disk
+        try:
+            num_particles = len(data_dict['rlnCoordinateX'])
+            micrographs = set(data_dict['rlnMicrographName'])
+            num_mics = len(micrographs)
+        except:
+            raise Exception('STAR file %s is missing necessary information\
+                    about number of particles and micrographs.' % particles_fp)
+
+        # The metadata can be usually parsed from the STAR file
+        # But if it doesn't exist, the user can input value within the GUI
+        try:
+            voltage = data_dict['rlnVoltage']
+        except:
+            warnings.warn("STAR file %s is missing parameter 'rlnVoltage':\
+                    voltage is set to 0." particles_fp)
+            voltage = 0
+        try:
+            cs = data_dict['rlnSphericalAberration']
+        except:
+            warnings.warn("STAR file %s is missing parameter 'rlnSphericalAberration':\
+                    CS is set to 0.0." % particles_fp)
+            cs = 0.0
+        try:
+            amp_cont = data_dict['rlnAmplitudeContrast']
+        except:
+            warnings.warn("STAR file %s is missing parameter 'rlnAmplitudeContrast':\
+                    amp_cont is set to 0.0." % particles_fp)
+            amp_cont = 0.0
+        try:
+            pix_size = data_dict['rlnImagePixelSize']
+        except:
+            warnings.warn("STAR file %s is missing parameter: 'rlnImagePixelSize':\
+                    pix_size is set to 0.0." % particles_fp)
+            pix_size = 0.0
+
+        with open(os.path.join(output_folder, 'info.txt'), 'w') as info_f:
+            info_f.write('Number of Particles: %d\n' % num_particles)
+            info_f.write('Number of Micrographs: %d\n' % num_mics)
+            info_f.write('Voltage: %d\n' % voltage)
+            info_f.write('Spherical Aberration (CS): %g\n' % cs)
+            info_f.write('Amplitude Contrast: %g\n' % amp_cont)
+            info_f.write('$\n') #'$' will be used as the delimiter between sections 
+            info_f.write('Missing Micrographs\n')
+
+        with open(os.path.join(output_folder, 'data.txt'), 'w') as data_f:
+            # write particle metadata to data file on disk
+            data_f.write('Voltage %d\n' % voltage)
+            data_f.write('CS %g\n' % cs)
+            data_f.write('AmpContrast %g\n' % amp_cont)
+            data_f.write('PixelSize %g\n' % pix_size)
+            data_f.write('$\n') #'$' will be used as the delimiter between sections 
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
