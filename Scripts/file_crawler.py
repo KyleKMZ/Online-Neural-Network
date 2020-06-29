@@ -21,9 +21,21 @@ def find_file_with_extensions(dir_path, extensions=[]):
 
     return file_list
 
+# Checks if a folder is a relion project folder
+def is_relion_project(dir_path):
+    """
+    All Relion project folders have the default_pipeline.star and 
+    the .relion_display_gui_settings files.
+    """
+    files = ['default_pipeline.star', '.relion_display_gui_settings']
+    for fname in files:
+        if fname not in os.listdir(dir_path):
+            return false
+
+    return true
+
 def main():
     # for testing in the command-line as a script
-    print(find_file_with_extensions('../Test/', extensions=['.cs', '.star']))
 
 if __name__ == '__main__':
     main()
