@@ -30,12 +30,14 @@ def is_relion_project(dir_path):
     files = ['default_pipeline.star', '.relion_display_gui_settings']
     for fname in files:
         if fname not in os.listdir(dir_path):
-            return false
+            return False
 
-    return true
+    return True
 
 def main():
     # for testing in the command-line as a script
+    print(is_relion_project('../../relion30_tutorial'))
+    print(is_relion_project('../Test/'))
 
 if __name__ == '__main__':
     main()
