@@ -243,7 +243,7 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
                     pix_size is set to 0.0." % particles_fp)
             pix_size = 0.0
 
-        with open(os.path.join(output_folder, 'info.txt'), 'w') as info_f:
+        with open(os.path.join(data_output_dir, 'info.txt'), 'w') as info_f:
             info_f.write('Number of Particles: %d\n' % num_particles)
             info_f.write('Number of Micrographs: %d\n' % num_mics)
             info_f.write('Voltage: %d\n' % voltage)
@@ -252,7 +252,7 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
             info_f.write('$\n') #'$' will be used as the delimiter between sections 
             info_f.write('Missing Micrographs\n')
 
-        with open(os.path.join(output_folder, 'data.txt'), 'w') as data_f:
+        with open(os.path.join(data_output_dir, 'data.txt'), 'w') as data_f:
             # write particle metadata to data file on disk
             data_f.write('Voltage %d\n' % voltage)
             data_f.write('CS %g\n' % cs)
@@ -260,16 +260,35 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
             data_f.write('PixelSize %g\n' % pix_size)
             data_f.write('$\n') #'$' will be used as the delimiter between sections 
 
+        for mic in micrographs:
+            mic_name = os.path.basename(mic)
+            # save/copy over the necessary micrographs to disk
+            # By default, assume that the Relion project folder is two directories above the STAR file being parsed
+            # and the script is ran at the same file system level (how parse_particles.py is used in the GUI)
+            mic_path = os.path.join(os.getcwd(), os.path.abspath(os.path.join('../../', mic)))
+            if os.path.isfile(mic_path):
+                if copy_mics:
+                    copyfile(mic_path, mics_output_dir)
+                else:
+                    # Create a symbolic link to the actual micrograph
+                    # This should be default behavior to save disk space
+                    os.symlink(mic_path, os.path.join(mics_output_dir, mic_name))
+            else:
+                # issue a warning that a particular micrograph does not exist
+                # record missing micrographs in the info file
+                warnings.warn("WARNING: The micrograph '%s' cannot be found. It will not be stored in the database." % mic_name)
+                info_f.write("%s\n" % mic_name)
 
+            data_f.write('Micrograph %s\n' % mic_name)
+            # write all the particles (x, y locations) belonging to this micrograph
+            for i in range(num_particles):
+                if data_dict['rlnMicrographName'][i] == mic:
+                    data_f.write('%f %f\n', % (data_dict['rlnCoordinateX'][i], data_dict['rlnCoordinateY'][i]))
+            data_f.write('$\n')
 
-
-
-
-
-
-
-
-
+        info_f.close()
+        data_f.close()
+                
 if __name__ == '__main__':
     main()
 

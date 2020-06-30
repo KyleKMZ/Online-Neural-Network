@@ -60,7 +60,7 @@ def parse_relion_project(dir_path, entry_name):
         |   |-- Micrographs
         |   |       |-- mic1.mrc
         |   |       |-- mic2.mrc
-        |   |-- Particles (contains folders for data.txt and info.txt as previously implemented)
+        |   |-- Particles (contains folders for data.txt and info.txt within sub-folders as previously implemented)
         |
         |-- Entry2
         |
@@ -89,6 +89,10 @@ def parse_relion_project(dir_path, entry_name):
                 parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, 'particles.star'), 
                         data_output_dir = sub_particles_path,
                         mics_output_dir = mics_path)
+
+    # (2) Handles particle data from selected 2D classes
+
+    # (3) Handles particle data from selected 3D classes
 
 
 
