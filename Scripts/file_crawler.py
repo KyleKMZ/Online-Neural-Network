@@ -51,6 +51,7 @@ def parse_relion_project(dir_path, entry_name):
     (1) Manually Picked particles
     (2) Particles of selected 2D classes
     (3) Particles of selected 3D classes
+    (4) Particles from 3D Reconstruction job (Refine3D)
 
     FILE HIERARCHY
     ---------------
@@ -81,7 +82,7 @@ def parse_relion_project(dir_path, entry_name):
     # (1) Handles manually picked particle data
     manual_pick_dir = os.path.join(dir_path, 'ManualPick')
     if os.path.isdir(manual_pick_dir):
-        job_dir_path_list = [os.path.join(manual_pick_dir, fname) for fname in os.listdir(manual_pick_dir) if os.path.isdir(os.path.join(manual_pick_dir, fname))]
+        job_dir_path_list = [os.path.join(manual_pick_dir, dir_name) for dir_name in os.listdir(manual_pick_dir) if os.path.isdir(os.path.join(manual_pick_dir, dir_name))]
         for job_dir_path in job_dir_path_list:
             if contains_particle_data(job_dir_path):
                 sub_particles_path = os.path.join(particles_path, 'ManualPick %s' % os.path.dirname(job_dir_path))
@@ -91,8 +92,33 @@ def parse_relion_project(dir_path, entry_name):
                         mics_output_dir = mics_path)
 
     # (2) Handles particle data from selected 2D classes
-
     # (3) Handles particle data from selected 3D classes
+    select_dir = os.path.join(dir_path, 'Select')
+    if os.path.isdir(select_dir):
+        job_dir_path_list = [os.path.join(select_dir, dir_name) for dir_name in os.listdir(manual_pick_dir) if os.path.isdir(os.path.join(manual_pick_dir, dir_name))]
+        for job_dir_path in job_dir_path_list:
+            if contains_particle_data(job_dir_path):
+                if _get_particle_type(job_dir_path) == 'Class3D':
+
+                elif _get_particle_type(job_dir_path) == 'Class2D':
+
+                else:
+                    # Inconclusive particle type. Should never happen in real use.
+                    # For debugging purposes.
+
+
+def _get_particle_type(job_dir):
+    # Returns whether a Relion Select job deals with either
+    # 2D classes or 3D classes.
+    #
+    # Relion sub-folders have a 'job_pipeline.star' file that describes the input
+    # and output data type of a particular job. The 'data_pipeline_input_edges'
+    # section in particular describes the input job class (whether its from 
+    # 2D classification or 3D classification or something else).
+    particle_type = ""
+    with open(os.path.join(job_dir, 'job_pipeline.star'), 'r') as pipeline_f:
+
+
 
 
 
