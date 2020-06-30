@@ -27,7 +27,7 @@ def main():
 def parse_particles(fp, entry_name):
  
     ext = os.path.splitext(fp)[-1].lower()
-    if not os.path.isfile(fp) or ext != '.star' or ext != '.cs'):
+    if not os.path.isfile(fp) or ext != '.star' or ext != '.cs':
         raise Exception('Please provide a valid Relion .star or CryoSparc .cs file.')
 
     db_loc = '../Database/'
@@ -222,7 +222,7 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
             voltage = data_dict['rlnVoltage']
         except:
             warnings.warn("STAR file %s is missing parameter 'rlnVoltage':\
-                    voltage is set to 0." particles_fp)
+                    voltage is set to 0." % particles_fp)
             voltage = 0
         try:
             cs = data_dict['rlnSphericalAberration']
@@ -283,7 +283,7 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
             # write all the particles (x, y locations) belonging to this micrograph
             for i in range(num_particles):
                 if data_dict['rlnMicrographName'][i] == mic:
-                    data_f.write('%f %f\n', % (data_dict['rlnCoordinateX'][i], data_dict['rlnCoordinateY'][i]))
+                    data_f.write('%f %f\n' % (data_dict['rlnCoordinateX'][i], data_dict['rlnCoordinateY'][i]))
             data_f.write('$\n')
 
         info_f.close()

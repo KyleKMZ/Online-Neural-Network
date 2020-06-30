@@ -98,8 +98,7 @@ def parse_relion_project(dir_path, entry_name):
 
 def main():
     # for testing in the command-line as a script
-    print(is_relion_project('../../relion30_tutorial'))
-    print(is_relion_project('../Test/'))
+    parse_relion_project('../../relion30_tutorial', 'RelionTest')
 
 if __name__ == '__main__':
     main()
