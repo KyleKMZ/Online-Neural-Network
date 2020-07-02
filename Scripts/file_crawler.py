@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from parse_particles import parse_particles_project_folder
 
 # Find files ending with the extensions in the list and
@@ -37,12 +38,23 @@ def is_relion_project(dir_path):
 
 # Checks if a directory contains RELION particle data
 def contains_particle_data(dir_path):
-    files = ['particles.star']
-    for fname in files:
-        if fname not in os.listdir(dir_path):
-            return False
+    """
+    ManualPick and Select -> 2D, 3D contains a 'particles.star' file.
+    For Refine3D jobs, check for a file of the type: 'run_itxxx_data.star',
+    where xxx is the max iteration for a particular 3D refinement.
+    Returns the name of the file that contains particle data if it exists,
+    which is particles.star or run_itMAX_data.star.
+    """
 
-    return True
+    if 'particles.star' in os.listdir(dir_path):
+        return 'particles.star'
+    else:
+        run_iters = [for fname in os.listdir(dir_path) if re.match('run_it[0-9]{3}_data.star', fname)]
+        iter_nums = map(int, re.findall('\d+', run_iters))
+        max_run_iter = 'run_it%s_data.star' % {:0>3}.format(max(iter_nums))
+        return max_run_iter
+
+    return ''
 
 # Parse a Relion project folder and save to disk its particle data
 def parse_relion_project(dir_path, entry_name):
@@ -98,13 +110,33 @@ def parse_relion_project(dir_path, entry_name):
         job_dir_path_list = [os.path.join(select_dir, dir_name) for dir_name in os.listdir(manual_pick_dir) if os.path.isdir(os.path.join(manual_pick_dir, dir_name))]
         for job_dir_path in job_dir_path_list:
             if contains_particle_data(job_dir_path):
+                sub_particles_path = ""
                 if _get_particle_type(job_dir_path) == 'Class3D':
-
+                    sub_particles_path = os.path.join(particles_path, 'Select3D %s' % os.path.dirname(job_dir_path))
                 elif _get_particle_type(job_dir_path) == 'Class2D':
-
+                    sub_particles_path = os.path.join(particles_path, 'Select2D %s' % os.path.dirname(job_dir_path))
                 else:
                     # Inconclusive particle type. Should never happen in real use.
                     # For debugging purposes.
+                    sub_particles_path = os.path.join(particles_path, 'Inconclusive %s' % os.path.dirname(job_dir_path))
+                    warnings.warn("Inconclusive particle file type...")
+
+                os.makedirs(sub_particles_path)
+                parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, 'particles.star'),
+                        data_output_dir = sub_particles_path,
+                        mics_output_dir = mics_path)
+
+    # (4) Handles cases of just one 3D reconstruction in a project - the Refine3D job
+    refine3D_dir = os.path.join(dir_path, 'Refine3D')
+    if os.path.isdir(refine3D_dir):
+        job_dir_path_list = [os.path.join(refine3D_dir, dir_name) for dir_name in os.listdir(refine3D_dir) if os.path.isdir(os.path.join(refine3D_dir, dir_name))]
+        for job_dir_path in job_dir_path_list:
+            if data_fname = contains_particle_data(job_dir_path):
+                sub_particles_path = os.path.join(particles_path, 'Refine3D %s' % os.path.dirname(job_dir_path))
+                os.makedirs(sub_particles_path)
+                parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, data_fname),
+                        data_output_dir = sub_particles_path,
+                        mics_output_dir = mics_path)
 
 
 def _get_particle_type(job_dir):
@@ -117,6 +149,13 @@ def _get_particle_type(job_dir):
     # 2D classification or 3D classification or something else).
     particle_type = ""
     with open(os.path.join(job_dir, 'job_pipeline.star'), 'r') as pipeline_f:
+        while True:
+            line = pipeline_f.readline().strip()
+            if line == "data_pipeline_input_edges":
+                particle_type = [pipeline_f.readline().strip() for i in range(5)][4]
+                break
+    particle_type  = particle_type.split('/')[0]
+    return particle_type
 
 
 
@@ -124,8 +163,7 @@ def _get_particle_type(job_dir):
 
 def main():
     # for testing in the command-line as a script
-    parse_relion_project('../../relion30_tutorial', 'RelionTest')
-
+    print(_get_particle_type('./'))
 if __name__ == '__main__':
     main()
                 
