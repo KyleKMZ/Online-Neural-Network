@@ -37,7 +37,7 @@ def is_relion_project(dir_path):
     return True
 
 # Checks if a directory contains RELION particle data
-def contains_particle_data(dir_path):
+def _contains_particle_data(dir_path):
     """
     ManualPick and Select -> 2D, 3D contains a 'particles.star' file.
     For Refine3D jobs, check for a file of the type: 'run_itxxx_data.star',
@@ -48,10 +48,14 @@ def contains_particle_data(dir_path):
 
     if 'particles.star' in os.listdir(dir_path):
         return 'particles.star'
-    else:
-        run_iters = [for fname in os.listdir(dir_path) if re.match('run_it[0-9]{3}_data.star', fname)]
-        iter_nums = map(int, re.findall('\d+', run_iters))
-        max_run_iter = 'run_it%s_data.star' % {:0>3}.format(max(iter_nums))
+    elif 'Refine3D' in dir_path:
+        run_iters = []
+        for fname in os.listdir(dir_path):
+            if re.match('run_it[0-9]{3}_data.star', fname):
+                run_iters.append(fname)
+        iter_nums = [re.findall('\d+', iteration)[0] for iteration in run_iters]
+        print(dir_path, iter_nums)
+        max_run_iter = 'run_it%s_data.star' % '{0:0=3d}'.format(int(max(iter_nums)))
         return max_run_iter
 
     return ''
@@ -95,10 +99,16 @@ def parse_relion_project(dir_path, entry_name):
     manual_pick_dir = os.path.join(dir_path, 'ManualPick')
     if os.path.isdir(manual_pick_dir):
         job_dir_path_list = [os.path.join(manual_pick_dir, dir_name) for dir_name in os.listdir(manual_pick_dir) if os.path.isdir(os.path.join(manual_pick_dir, dir_name))]
+        print(job_dir_path_list)
         for job_dir_path in job_dir_path_list:
-            if contains_particle_data(job_dir_path):
-                sub_particles_path = os.path.join(particles_path, 'ManualPick %s' % os.path.dirname(job_dir_path))
+            # For jobs with user-given names, Relion creates a symbolink link to the real job directory
+            # Parsing only the actual job directories will prevent double-parsing particle data
+            if os.path.islink(job_dir_path):
+                continue
+            if _contains_particle_data(job_dir_path):
+                sub_particles_path = os.path.join(particles_path, 'ManualPick %s' % os.path.basename(os.path.normpath(job_dir_path)))
                 os.makedirs(sub_particles_path)
+                print(sub_particles_path)
                 parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, 'particles.star'), 
                         data_output_dir = sub_particles_path,
                         mics_output_dir = mics_path)
@@ -107,14 +117,15 @@ def parse_relion_project(dir_path, entry_name):
     # (3) Handles particle data from selected 3D classes
     select_dir = os.path.join(dir_path, 'Select')
     if os.path.isdir(select_dir):
-        job_dir_path_list = [os.path.join(select_dir, dir_name) for dir_name in os.listdir(manual_pick_dir) if os.path.isdir(os.path.join(manual_pick_dir, dir_name))]
+        job_dir_path_list = [os.path.join(select_dir, dir_name) for dir_name in os.listdir(select_dir) if os.path.isdir(os.path.join(select_dir, dir_name))]
         for job_dir_path in job_dir_path_list:
-            if contains_particle_data(job_dir_path):
-                sub_particles_path = ""
+            if os.path.islink(job_dir_path):
+                continue
+            if _contains_particle_data(job_dir_path):
                 if _get_particle_type(job_dir_path) == 'Class3D':
-                    sub_particles_path = os.path.join(particles_path, 'Select3D %s' % os.path.dirname(job_dir_path))
+                    sub_particles_path = os.path.join(particles_path, 'Select3D %s' % os.path.basename(os.path.normpath(job_dir_path)))
                 elif _get_particle_type(job_dir_path) == 'Class2D':
-                    sub_particles_path = os.path.join(particles_path, 'Select2D %s' % os.path.dirname(job_dir_path))
+                    sub_particles_path = os.path.join(particles_path, 'Select2D %s' % os.path.basename(os.path.normpath(job_dir_path)))
                 else:
                     # Inconclusive particle type. Should never happen in real use.
                     # For debugging purposes.
@@ -131,8 +142,11 @@ def parse_relion_project(dir_path, entry_name):
     if os.path.isdir(refine3D_dir):
         job_dir_path_list = [os.path.join(refine3D_dir, dir_name) for dir_name in os.listdir(refine3D_dir) if os.path.isdir(os.path.join(refine3D_dir, dir_name))]
         for job_dir_path in job_dir_path_list:
-            if data_fname = contains_particle_data(job_dir_path):
-                sub_particles_path = os.path.join(particles_path, 'Refine3D %s' % os.path.dirname(job_dir_path))
+            if os.path.islink(job_dir_path):
+                continue
+            data_fname = _contains_particle_data(job_dir_path)
+            if data_fname:
+                sub_particles_path = os.path.join(particles_path, 'Refine3D %s' % os.path.basename(os.path.normpath(job_dir_path)))
                 os.makedirs(sub_particles_path)
                 parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, data_fname),
                         data_output_dir = sub_particles_path,
@@ -163,7 +177,8 @@ def _get_particle_type(job_dir):
 
 def main():
     # for testing in the command-line as a script
-    print(_get_particle_type('./'))
+    print(parse_relion_project('../../relion30_tutorial/', 'relion_test'))
+
 if __name__ == '__main__':
     main()
                 

@@ -195,18 +195,18 @@ def parse_particles(fp, entry_name):
 
 def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_dir, copy_mics = False):
     # Implementation of parse_particles used for parsing particle data
-    # by their Relion or CSparc project folder hierarchically
+    # by their Relion or CSparc project folder hierarchy
     # particles_fp: input particle file -> .STAR or .CS
     # data_output_dir: directory to save particle data files info.txt and data.txt
     # mics_output_dir: directory to save micrographs that contains the particles
     # copy_mics: if set to False (default), micrographs are symbolically linked instead of hard-copied
 
-    ext = os.path.splitext(fp)[-1].lower()
-    if not os.path.isfile(fp) or ext != '.star' or ext != '.cs':
+    ext = os.path.splitext(particles_fp)[-1].lower()
+    if not os.path.isfile(particles_fp) or (ext != '.star' and ext != '.cs'):
         raise Exception('Please provide a valid Relion .star or CryoSparc .cs file.')
 
     if (ext == '.star'):
-        data_dict = parse_relion(fp)
+        data_dict = parse_relion(particles_fp)
         # Write training data info to disk
         try:
             num_particles = len(data_dict['rlnCoordinateX'])
@@ -243,36 +243,39 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
                     pix_size is set to 0.0." % particles_fp)
             pix_size = 0.0
 
-        with open(os.path.join(data_output_dir, 'info.txt'), 'w') as info_f:
-            info_f.write('Number of Particles: %d\n' % num_particles)
-            info_f.write('Number of Micrographs: %d\n' % num_mics)
-            info_f.write('Voltage: %d\n' % voltage)
-            info_f.write('Spherical Aberration (CS): %g\n' % cs)
-            info_f.write('Amplitude Contrast: %g\n' % amp_cont)
-            info_f.write('$\n') #'$' will be used as the delimiter between sections 
-            info_f.write('Missing Micrographs\n')
+        info_f = open(os.path.join(data_output_dir, 'info.txt'), 'w')
+        info_f.write('Number of Particles: %d\n' % num_particles)
+        info_f.write('Number of Micrographs: %d\n' % num_mics)
+        info_f.write('Voltage: %d\n' % voltage)
+        info_f.write('Spherical Aberration (CS): %g\n' % cs)
+        info_f.write('Amplitude Contrast: %g\n' % amp_cont)
+        info_f.write('$\n') #'$' will be used as the delimiter between sections 
+        info_f.write('Missing Micrographs\n')
 
-        with open(os.path.join(data_output_dir, 'data.txt'), 'w') as data_f:
-            # write particle metadata to data file on disk
-            data_f.write('Voltage %d\n' % voltage)
-            data_f.write('CS %g\n' % cs)
-            data_f.write('AmpContrast %g\n' % amp_cont)
-            data_f.write('PixelSize %g\n' % pix_size)
-            data_f.write('$\n') #'$' will be used as the delimiter between sections 
+        data_f = open(os.path.join(data_output_dir, 'data.txt'), 'w')
+        # write particle metadata to data file on disk
+        data_f.write('Voltage %d\n' % voltage)
+        data_f.write('CS %g\n' % cs)
+        data_f.write('AmpContrast %g\n' % amp_cont)
+        data_f.write('PixelSize %g\n' % pix_size)
+        data_f.write('$\n') #'$' will be used as the delimiter between sections 
 
         for mic in micrographs:
             mic_name = os.path.basename(mic)
             # save/copy over the necessary micrographs to disk
             # By default, assume that the Relion project folder is two directories above the STAR file being parsed
             # and the script is ran at the same file system level (how parse_particles.py is used in the GUI)
-            mic_path = os.path.join(os.getcwd(), os.path.abspath(os.path.join('../../', mic)))
+            mic_path = os.path.normpath(os.path.join(os.path.abspath(particles_fp), os.path.join('../../../', mic)))
+            print(particles_fp)
+            print(mic_path)
             if os.path.isfile(mic_path):
                 if copy_mics:
                     copyfile(mic_path, mics_output_dir)
                 else:
                     # Create a symbolic link to the actual micrograph
                     # This should be default behavior to save disk space
-                    os.symlink(mic_path, os.path.join(mics_output_dir, mic_name))
+                    if not os.path.isfile(os.path.join(mics_output_dir, mic_name)):
+                        os.symlink(mic_path, os.path.join(mics_output_dir, mic_name))
             else:
                 # issue a warning that a particular micrograph does not exist
                 # record missing micrographs in the info file
