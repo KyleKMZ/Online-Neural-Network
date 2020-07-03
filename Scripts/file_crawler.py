@@ -106,7 +106,7 @@ def parse_relion_project(dir_path, entry_name):
             if os.path.islink(job_dir_path):
                 continue
             if _contains_particle_data(job_dir_path):
-                sub_particles_path = os.path.join(particles_path, 'ManualPick %s' % os.path.basename(os.path.normpath(job_dir_path)))
+                sub_particles_path = os.path.join(particles_path, 'ManualPick_%s' % os.path.basename(os.path.normpath(job_dir_path)))
                 os.makedirs(sub_particles_path)
                 print(sub_particles_path)
                 parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, 'particles.star'), 
@@ -123,13 +123,13 @@ def parse_relion_project(dir_path, entry_name):
                 continue
             if _contains_particle_data(job_dir_path):
                 if _get_particle_type(job_dir_path) == 'Class3D':
-                    sub_particles_path = os.path.join(particles_path, 'Select3D %s' % os.path.basename(os.path.normpath(job_dir_path)))
+                    sub_particles_path = os.path.join(particles_path, 'Select3D_%s' % os.path.basename(os.path.normpath(job_dir_path)))
                 elif _get_particle_type(job_dir_path) == 'Class2D':
-                    sub_particles_path = os.path.join(particles_path, 'Select2D %s' % os.path.basename(os.path.normpath(job_dir_path)))
+                    sub_particles_path = os.path.join(particles_path, 'Select2D_%s' % os.path.basename(os.path.normpath(job_dir_path)))
                 else:
                     # Inconclusive particle type. Should never happen in real use.
                     # For debugging purposes.
-                    sub_particles_path = os.path.join(particles_path, 'Inconclusive %s' % os.path.dirname(job_dir_path))
+                    sub_particles_path = os.path.join(particles_path, 'Inconclusive_%s' % os.path.dirname(job_dir_path))
                     warnings.warn("Inconclusive particle file type...")
 
                 os.makedirs(sub_particles_path)
@@ -146,7 +146,7 @@ def parse_relion_project(dir_path, entry_name):
                 continue
             data_fname = _contains_particle_data(job_dir_path)
             if data_fname:
-                sub_particles_path = os.path.join(particles_path, 'Refine3D %s' % os.path.basename(os.path.normpath(job_dir_path)))
+                sub_particles_path = os.path.join(particles_path, 'Refine3D_%s' % os.path.basename(os.path.normpath(job_dir_path)))
                 os.makedirs(sub_particles_path)
                 parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, data_fname),
                         data_output_dir = sub_particles_path,
