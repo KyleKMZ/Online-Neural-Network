@@ -351,7 +351,6 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
             else:
                 # issue a warning that a particular micrograph does not exist
                 # record missing micrographs in info.txt
-                print(mic_path)
                 warnings.warn("WARNING: The micrograph '%s' cannot be found. It will not be copied over." % mic_name)
                 info_f.write('%s\n' % mic_name) 
 
