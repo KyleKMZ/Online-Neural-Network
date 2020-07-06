@@ -78,6 +78,8 @@ def _contains_particle_data_csparc(dir_path):
 def _csparc_job_type(job_dir_path):
     if not os.path.isdir(job_dir_path):
         return ''
+    if not re.match('J\d', os.path.basename(os.path.normpath(job_dir_path))):
+        return ''
     json_path = os.path.join(job_dir_path, 'job.json')
     with open(json_path) as json_f:
         data = json.load(json_f)
@@ -272,7 +274,7 @@ def _get_particle_type(job_dir):
 
 def main():
     # for testing in the command-line as a script
-    print(parse_csparc_project('/net/jiang/cryosparc/cryosparc-projects/zaw/P192/', 'csparc_test'))
+    print(parse_csparc_project('/net/jiang/cryosparc/cryosparc-projects/zaw/P190/', 'csparc_test'))
 
 if __name__ == '__main__':
     main()
