@@ -64,7 +64,9 @@ def _contains_particle_data(dir_path):
 # checks if a directory contains CSPARC particle data
 def _contains_particle_data_csparc(dir_path):
     particle_fnames = ['extracted_particles.cs',
-                        'passthrough_particles_selected.cs']
+                        'passthrough_particles_selected.cs',
+                        'passthrough_particles.cs',
+                        'passthrough_particles_all_classes.cs']
     for fname in os.listdir(dir_path):
         for particle_file_name in particle_fnames:
             if particle_file_name in fname:
@@ -74,10 +76,12 @@ def _contains_particle_data_csparc(dir_path):
 
 # returns the type of a cryosparc job folder 
 def _csparc_job_type(job_dir_path):
+    if not os.path.isdir(job_dir_path):
+        return ''
     json_path = os.path.join(job_dir_path, 'job.json')
     with open(json_path) as json_f:
         data = json.load(json_f)
-        if data['job_type'] = 'manual_picker':
+        if data['job_type'] == 'manual_picker':
             # Manual Picking jobs can also be for micrographs, clarify this
             if 'particles' in data['output_group_images']:
                 return 'manual_picker_particles'
@@ -112,7 +116,7 @@ def parse_csparc_project(dir_path, entry_name):
         if particles_fname:
             sub_particles_path = os.path.join(particles_path, 'ManualPick_%s' % os.path.basename(os.path.normpath(manual_job_dir)))
             os.makedirs(sub_particles_path)
-            parse_particle_project_folder(particles_fp = os.path.join(manual_job_dir, particles_fname),
+            parse_particles_project_folder(particles_fp = os.path.join(manual_job_dir, particles_fname),
                     data_output_dir = sub_particles_path,
                     mics_output_dir = mics_path)
 
@@ -124,7 +128,7 @@ def parse_csparc_project(dir_path, entry_name):
         if particles_fname:
             sub_particles_path = os.path.join(particles_path, 'Select2D_%s' % os.path.basename(os.path.normpath(select2D_job_dir)))
             os.makedirs(sub_particles_path)
-            parse_particle_project_folder(particles_fp = os.path.join(select2D_job_dir, particles_fname),
+            parse_particles_project_folder(particles_fp = os.path.join(select2D_job_dir, particles_fname),
                     data_output_dir = sub_particles_path,
                     mics_output_dir = mics_path)
 
@@ -143,7 +147,7 @@ def parse_csparc_project(dir_path, entry_name):
     # Handles particle data from homogeneous refinement
     homo_dir_path_list = [os.path.join(dir_path, dir_name) for dir_name in os.listdir(dir_path)
             if _csparc_job_type(os.path.join(dir_path, dir_name)) == 'homo_refine' or
-            _cpsarc_job_type(os.path.join(dir_path, dir_name)) == 'homo_refine_new']
+            _csparc_job_type(os.path.join(dir_path, dir_name)) == 'homo_refine_new']
     for homo_job_dir in homo_dir_path_list:
         particles_fname = _contains_particle_data_csparc(homo_job_dir)
         if particles_fname:
@@ -200,7 +204,6 @@ def parse_relion_project(dir_path, entry_name):
             if _contains_particle_data(job_dir_path):
                 sub_particles_path = os.path.join(particles_path, 'ManualPick_%s' % os.path.basename(os.path.normpath(job_dir_path)))
                 os.makedirs(sub_particles_path)
-                print(sub_particles_path)
                 parse_particles_project_folder(particles_fp = os.path.join(job_dir_path, 'particles.star'), 
                         data_output_dir = sub_particles_path,
                         mics_output_dir = mics_path)
@@ -269,7 +272,7 @@ def _get_particle_type(job_dir):
 
 def main():
     # for testing in the command-line as a script
-    print(parse_relion_project('../../relion30_tutorial/', 'relion_test'))
+    print(parse_csparc_project('/net/jiang/cryosparc/cryosparc-projects/zaw/P192/', 'csparc_test'))
 
 if __name__ == '__main__':
     main()
