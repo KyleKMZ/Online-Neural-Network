@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import json
 from parse_particles import parse_particles_project_folder
 
 # Find files ending with the extensions in the list and
@@ -60,6 +61,46 @@ def _contains_particle_data(dir_path):
 
     return ''
 
+# returns the type of a cryosparc job folder 
+def _csparc_job_type(job_dir_path):
+    json_path = os.path.join(job_dir_path, 'job.json')
+    with open(json_path) as json_f:
+        data = json.load(json_f)
+        if data['job_type'] = 'manual_picker':
+            # Manual Picking jobs can also be for micrographs, clarify this
+            if 'particles' in data['output_group_images']:
+                return 'manual_picker_particles'
+            else:
+                return 'manual_picker_mics'
+        return data['job_type']
+    
+
+# Parse a Cryosparc project folder and save to disk its particle data
+def parse_csparc_project(dir_path, entry_name):
+    """
+    There are 4 types of particle data to save to disk:
+    (1) Manually Picked particles
+    (2) Particles of selected 2D classes
+    (3) Particles from heterogeneous refinement
+    (4) Particles from homogeneous refinement (best particles)
+    """
+
+    db_loc = '../Database/'
+    entry_path = os.path.join('../Database', entry_name)
+    os.makedirs(entry_path)
+    mics_path = os.path.join(entry_path, 'Micrographs')
+    os.makedirs(mics_path)
+    particles_path = os.path.join(entry_path, 'Particles')
+    os.makedirs(particles_path)
+
+    # Handles manually picked particle data
+    manual_dir_path_list = [for dir_name in os.listdir(dir_path) 
+        if _csparc_job_type(os.path.join(dir_path, dir_name)) == 'manual_picker_particles']
+    for manual_job_dir in manual_dir_path_list:
+
+ 
+
+
 # Parse a Relion project folder and save to disk its particle data
 def parse_relion_project(dir_path, entry_name):
     """
@@ -67,7 +108,7 @@ def parse_relion_project(dir_path, entry_name):
     (1) Manually Picked particles
     (2) Particles of selected 2D classes
     (3) Particles of selected 3D classes
-    (4) Particles from 3D Reconstruction job (Refine3D)
+    (4) Particles from 3D Reconstruction job (Refine3D - homogeneous refinement, best particles)
 
     FILE HIERARCHY
     ---------------

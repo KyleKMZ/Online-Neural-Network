@@ -266,8 +266,6 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
             # By default, assume that the Relion project folder is two directories above the STAR file being parsed
             # and the script is ran at the same file system level (how parse_particles.py is used in the GUI)
             mic_path = os.path.normpath(os.path.join(os.path.abspath(particles_fp), os.path.join('../../../', mic)))
-            print(particles_fp)
-            print(mic_path)
             if os.path.isfile(mic_path):
                 if copy_mics:
                     copyfile(mic_path, mics_output_dir)
@@ -291,6 +289,85 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
 
         info_f.close()
         data_f.close()
+
+    elif ext == '.cs':
+        data_dict = parse_csparc(particles_fp)
+        
+        num_particles = len(data_dict['location/center_x_frac'])
+        micrographs = set(data_dict['location/micrograph_path'])
+        num_mics = len(micrographs)
+
+        # The metadata can usually be parsed from the CS file
+        # If it doesn't exist, the user can input value within the GUI
+        try:
+            voltage = data_dict['ctf/accel_kv']
+        except:
+            voltage = 0
+        try:
+            cs = data_dict['ctf/cs_mm']
+        except:
+            cs = 0.0
+        try:
+            amp_cont = data_dict['ctf/amp_contrast']
+        except:
+            amp_cont = 0.0
+        try:
+            pix_size = data_dict['blob/psize_A']
+        except:
+            pix_size = 0.0
+
+        info_f = open(os.path.join(data_output_dir, 'info.txt'), 'w')
+        info_f.write('Number of Particles: %d\n' % num_particles)
+        info_f.write('Number of Micrographs: %d\n' % num_mics)
+        info_f.write('Voltage: %d\n' % voltage)
+        info_f.write('Spherical Aberration (CS): %g\n' % cs)
+        info_f.write('Amplitude Contrast: %g\n' % amp_cont)
+        info_f.write('$\n') #'$' will be used as the delimiter between sections 
+        info_f.write('Missing Micrographs\n')
+
+        data_f = open(os.path.join(data_output_dir, 'data.txt'), 'w')
+        # write particle metadata to data file on disk
+        data_f.write('Voltage %d\n' % voltage)
+        data_f.write('CS %g\n' % cs)
+        data_f.write('AmpContrast %g\n' % amp_cont)
+        data_f.write('PixelSize %g\n' % pix_size)
+        data_f.write('$\n') #'$' will be used as the delimiter between sections 
+        
+        
+        # write the training data to disk, organized by micrograph
+        for mic in micrographs:
+            mic_name = os.path.basename(mic.decode('utf-8'))
+            # save/copy over the necessary micrographs to disk
+            mic_path = os.path.normpath(os.path.join(particles_fp, os.path.join('../', mic.decode('utf-8'))))
+            if os.path.isfile(mic_path):
+                if copy_mics:
+                    copyfile(mic_path, mics_output_dir)
+                else:
+                    # Create a symbolic link to the actual micrograph
+                    # This should be default behavior to save disk space
+                    if not os.path.isfile(os.path.join(mics_output_dir, mic_name)):
+                        os.symlink(mic_path, os.path.join(mics_output_dir, mic_name))
+
+            else:
+                # issue a warning that a particular micrograph does not exist
+                # record missing micrographs in info.txt
+                print(mic_path)
+                warnings.warn("WARNING: The micrograph '%s' cannot be found. It will not be copied over." % mic_name)
+                info_f.write('%s\n' % mic_name) 
+
+            data_f.write('Micrograph %s\n' % mic_name)
+            # write all the particles (x, y locations) belonging to this micrograph
+            for i in range(num_particles):
+                if data_dict['location/micrograph_path'][i] == mic:
+                    x_coord = data_dict['location/center_x_frac'][i] * data_dict['location/micrograph_shape'][i][0].astype(np.int)
+                    y_coord = data_dict['location/center_y_frac'][i] * data_dict['location/micrograph_shape'][i][1].astype(np.int)
+                    data_f.write('%f %f\n' % (x_coord, y_coord))
+            data_f.write('$\n')
+
+        info_f.close()
+        data_f.close()
+
+
                 
 if __name__ == '__main__':
     main()
