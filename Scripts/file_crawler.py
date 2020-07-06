@@ -37,6 +37,34 @@ def is_relion_project(dir_path):
 
     return True
 
+# Checks if a folder is a CSPARC project folder
+def is_csparc_project(dir_path):
+    """
+    ALL CSparc project folders have settings and metadata files that identifies
+    them as a CSparc project.
+    """
+    files = ['job_manifest.json', 'workspaces.json', 'project.json']
+    for fname in files:
+        if fname not in os.listdir(dir_path):
+            return False
+
+    return True
+
+# Recursively search starting from a root directory for Relion and CSparc
+# projects to parse them and add their particle data to a database
+def parse_particles_cryoem_projects(root_dir):
+    for root, subdirs, files in os.walk(root_dir):
+        if is_relion_project(root):
+            parse_relion_project(root, os.path.basename(os.path.normpath(root)))
+        if is_csparc_project(root):
+            parse_csparc_project(root, os.path.basename(os.path.normpath(root)))
+
+        else:
+            for dir_path in subdirs:
+                parse_particles_cryoem_projects(dir_path)
+
+
+
 # Checks if a directory contains RELION particle data
 def _contains_particle_data(dir_path):
     """
