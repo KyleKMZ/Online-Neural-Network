@@ -338,7 +338,7 @@ def parse_particles_project_folder(particles_fp, data_output_dir, mics_output_di
         for mic in micrographs:
             mic_name = os.path.basename(mic.decode('utf-8'))
             # save/copy over the necessary micrographs to disk
-            mic_path = os.path.normpath(os.path.join(particles_fp, os.path.join('../', mic.decode('utf-8'))))
+            mic_path = os.path.normpath(os.path.join(particles_fp, os.path.join('../../', mic.decode('utf-8'))))
             if os.path.isfile(mic_path):
                 if copy_mics:
                     copyfile(mic_path, mics_output_dir)

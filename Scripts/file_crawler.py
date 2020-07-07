@@ -55,9 +55,20 @@ def is_csparc_project(dir_path):
 def parse_particles_cryoem_projects(root_dir):
     for root, subdirs, files in os.walk(root_dir):
         if is_relion_project(root):
-            parse_relion_project(root, os.path.basename(os.path.normpath(root)))
+            try:
+                parse_relion_project(root, os.path.basename(os.path.normpath(root)))
+            except:
+                # Do nothing in case an exception is triggered,
+                # there can be various reasons as to an exception.
+                # Many parameters missing will cause an exception of their own.
+                # In the future, might wanna implement more detailed error
+                # or warnings about which parameters are missing.
+                pass
         if is_csparc_project(root):
-            parse_csparc_project(root, os.path.basename(os.path.normpath(root)))
+            try:
+                parse_csparc_project(root, os.path.basename(os.path.normpath(root)))
+            except:
+                pass
 
         else:
             for dir_path in subdirs:
@@ -181,7 +192,7 @@ def parse_csparc_project(dir_path, entry_name):
     for homo_job_dir in homo_dir_path_list:
         particles_fname = _contains_particle_data_csparc(homo_job_dir)
         if particles_fname:
-            sub_particles_path = os.path.join(particles_path, 'Homo_%s' % os.path.basename(os.path.normpath(hetero_job_dir)))
+            sub_particles_path = os.path.join(particles_path, 'Homo_%s' % os.path.basename(os.path.normpath(homo_job_dir)))
             os.makedirs(sub_particles_path)
             parse_particles_project_folder(particles_fp = os.path.join(homo_job_dir, particles_fname),
                     data_output_dir = sub_particles_path,
@@ -302,7 +313,7 @@ def _get_particle_type(job_dir):
 
 def main():
     # for testing in the command-line as a script
-    print(parse_csparc_project('/net/jiang/cryosparc/cryosparc-projects/zaw/P190/', 'csparc_test'))
+    parse_csparc_project('/net/jiang/cryosparc/cryosparc-projects/zaw/P180/', 'csparc_debug')
 
 if __name__ == '__main__':
     main()
