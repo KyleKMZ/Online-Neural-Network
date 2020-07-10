@@ -88,6 +88,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 'Select the root folder')
         if dir_name:
                 parse_particles_cryoem_projects(dir_name)
+                self.update_dbModel()
 
     def train_nn(self):
         pass
