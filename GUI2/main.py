@@ -12,7 +12,7 @@ from file_crawler import parse_relion_project, parse_csparc_project
 from file_crawler import parse_particles_cryoem_projects
 
 class entryItem(QStandardItem):
-        def __init(self, txt='', font_size=16, set_bold=True, color=QColor(255, 255, 255)):
+        def __init(self, txt='', font_size=16, set_bold=True, color=QColor(255, 255, 255), data={}):
                 super().__init__()
 
                 fnt = QFont('Open Sans', font_size)
@@ -22,9 +22,10 @@ class entryItem(QStandardItem):
                 self.setForeground(color)
                 self.setFont(fnt)
                 self.setText(txt)
+                self.data = data
 
 class subEntryItem(QStandardItem):
-        def __init__(self, txt='', font_size=14, set_bold=False, color=QColor(255, 255, 255)):
+        def __init__(self, txt='', font_size=14, set_bold=False, color=QColor(255, 255, 255), data={}):
                 super().__init__()
 
                 fnt = QFont('Open Sans', font_size)
@@ -34,6 +35,7 @@ class subEntryItem(QStandardItem):
                 self.setForeground(color)
                 self.setFont(fnt)
                 self.setText(txt)
+                self.data = data
 
 class dbModel(QStandardItemModel):
         def __init__(self, *args, entries=None, **kwargs):
@@ -138,8 +140,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                         entry_node = entryItem(main_entry)
                         for sub_entry in sub_entries:
-                                sub_entry_node = subEntryItem('%s %s' % (sub_entry['job_type'], sub_entry['job_size']))
-                                print('%s %s' % (sub_entry['job_type'], sub_entry['job_size']))
+                                sub_entry_node = subEntryItem('%s (%s)' % (sub_entry['job_type'], sub_entry['job_size']), data=sub_entry)
                                 entry_node.appendRow(sub_entry_node)
 
                         rootItem.appendRow(entry_node)
@@ -148,9 +149,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dbModel.layoutChanged.emit()
 
     def update_metadata_info(self):
-        index = self.treeView.currentIndex()
-        print(index)
+        index = self.treeView.selectedIndexes()[0]
+        selected_sub_entry = index.model().itemFromIndex(index)
 
+        if isinstance(selected_sub_entry, subEntryItem):
+            self.voltageValue.setText(selected_sub_entry.data['voltage'])
+            self.csValue.setText(selected_sub_entry.data['cs'])
+            self.psizeValue.setText(selected_sub_entry.data['psize'])
+            self.ampValue.setText(selected_sub_entry.data['amp_cont'])
+            self.nParticlesValue.setText(selected_sub_entry.data['num_particles'])
+            self.nMicsValue.setText(selected_sub_entry.data['num_mics'])
+    
     def get_directory_size(self, dir_path):
         total = 0
         try:
