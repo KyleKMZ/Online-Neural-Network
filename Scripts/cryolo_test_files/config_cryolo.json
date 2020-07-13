@@ -1,0 +1,37 @@
+{
+    "command": "cryolo_gui.py config config_cryolo.json 160 --train_image_folder train_image --train_annot_folder train_annot",
+    "model": {
+        "architecture": "PhosaurusNet",
+        "input_size": 1024,
+        "anchors": [
+            160,
+            160
+        ],
+        "max_box_per_image": 700,
+        "filter": [
+            0.1,
+            "filtered_tmp/"
+        ]
+    },
+    "train": {
+        "train_image_folder": "train_image",
+        "train_annot_folder": "train_annot",
+        "train_times": 10,
+        "pretrained_weights": "",
+        "batch_size": 4,
+        "learning_rate": 0.0001,
+        "nb_epoch": 200,
+        "object_scale": 5.0,
+        "no_object_scale": 1.0,
+        "coord_scale": 1.0,
+        "class_scale": 1.0,
+        "saved_weights_name": "cryolo_model.h5",
+        "debug": true,
+        "log_path": "logs/"
+    },
+    "valid": {
+        "valid_image_folder": "",
+        "valid_annot_folder": "",
+        "valid_times": 1
+    }
+}
