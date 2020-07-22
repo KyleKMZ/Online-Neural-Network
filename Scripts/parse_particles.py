@@ -21,7 +21,6 @@ def main():
     args = parser.parse_args()
     fp = args.filename
     entry_name = args.entryname
-    print(fp, entry_name)
     parse_particles(fp, entry_name)
 
 def parse_particles(fp, entry_name):

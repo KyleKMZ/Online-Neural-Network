@@ -313,7 +313,7 @@ def _get_particle_type(job_dir):
 
 def main():
     # for testing in the command-line as a script
-    parse_csparc_project('/net/jiang/cryosparc/cryosparc-projects/zaw/P180/', 'csparc_debug')
+    parse_particles_cryoem_projects('/net/jiang/home/zaw/scratch/relion30_tutorial')
 
 if __name__ == '__main__':
     main()
