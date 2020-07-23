@@ -15,6 +15,7 @@ import os
 import subprocess
 import shutil
 import warnings
+import argparse
 
 
 def create_config_file(box_size, config_fname,
@@ -152,6 +153,7 @@ def cryolo_pick_wrapper(config_fname='config_cryolo.json', mics_dir='full_data',
     
 
 def main():
+    """
     job_folders = ['../Database/relion30_tutorial/Particles/Refine3D_job035',
                 '../Database/P166/Particles/Homo_J14',
                 '../Database/P171/Particles/Homo_J20',
@@ -163,8 +165,23 @@ def main():
     box_sizes = [300, 300, 300, 300, 300, 300, 300, 300]
     cryolo_wrapper(job_folders = job_folders,
             box_sizes = box_sizes)
-
-
+    """
+    
+    # Note: Should add more optional arguments depending on what the user wants.
+    parser = argparse.ArgumentParser()
+    parser.add_argument("task", help="Either 'train' or 'pick'")
+    parser.add_argument("--job_folders", help="List of file_crawler.py job folder outputs")
+    parser.add_argument("--box_sizes", help="List of box sizes to use for each job folder")
+    args = parser.parse_args()
+    
+    if args.task == "train":
+        assert(len(args.job_folders) == len(args.box_sizes))
+        cryolo_train_wrapper(job_folders = args.job_folders,
+                box_sizes = [int(num) for num in args.box_sizes])
+    elif args.task == "pick":
+        cryolo_pick_wrapper()
+    else:
+        raise Exception("Invalid task: choose to either 'train' a model or 'pick' particles.")
 
 if __name__ == '__main__':
     main()
