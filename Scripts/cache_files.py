@@ -1,7 +1,9 @@
+#!/usr/bin/env python
+
 def cache_files(files, cache_dir=None, min_free_space_ratio=2):
     if cache_dir is None: return None
     
-    import sh, psutil, glob, time
+    import os, sh, psutil, glob, time, logging
     from pathlib import Path
 
     pc = Path(cache_dir)
@@ -43,7 +45,6 @@ def cache_files(files, cache_dir=None, min_free_space_ratio=2):
     if mapping:
         import atexit
         atexit.register(remove_cached_files, cached_files=todel)
-    
     return mapping
 
 def remove_cached_files(cached_files=set()):
@@ -74,3 +75,17 @@ def remove_cached_files(cached_files=set()):
                 logging.info(f"Removing cache file {filename}")
             except:
                 pass
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--list_of_files_dirs", "-l", help="Name of files and directories to be cached", nargs='+')
+    parser.add_argument("--cache_dest", "-d", help="Cache location")
+    args = parser.parse_args()
+
+    cache_files(args.list_of_files_dirs, cache_dir=args.cache_dest)
+
+if __name__ == '__main__':
+    main()
+

@@ -96,6 +96,7 @@ def cryolo_train_wrapper(job_folders=[], box_sizes=[], cryolo_output_folder='cry
     for i in range(len(job_folders)):
         job_folder = job_folders[i]
         box_size = box_sizes[i]
+        print("Parsing job: %s\n" % job_folder)
         convert_to_cryolo_training(particle_data_file=os.path.join(job_folder, 'data.txt'),
                                    box_size=box_size,
                                    output_image_folder=os.path.join(
@@ -122,15 +123,14 @@ def cryolo_train_wrapper(job_folders=[], box_sizes=[], cryolo_output_folder='cry
         slurm_f.write("\n")
         slurm_f.write("#SBATCH --job-name ctrain\n")
         slurm_f.write("#SBATCH --partition jiang-gpu\n")
-        slurm_f.write("#SBATCH --ntasks 1\n")
+        slurm_f.write("#SBATCH --ntasks 2\n")
         slurm_f.write("#SBATCH --cpus-per-task 12\n")
         slurm_f.write("#SBATCH --gres gpu:2\n")
         slurm_f.write("#SBATCH --nodelist prp\n")
         slurm_f.write("#SBATCH --output %x.%j.stdout\n")
         slurm_f.write("#SBATCH --error %x.%j.stderr\n")
         slurm_f.write("\n")
-        slurm_f.write("cryolo_train -c {} -w 5".format(config_fname))
-        subprocess.run("sbatch {}".format(script_path), shell=True)
+        slurm_f.write("cryolo_train.py -c {} -w 5".format(config_fname))
 
 
 def cryolo_pick_wrapper(config_fname='config_cryolo.json', mics_dir='full_data', weights='cryolo_model.h5', output='boxfiles'):
@@ -148,12 +148,10 @@ def cryolo_pick_wrapper(config_fname='config_cryolo.json', mics_dir='full_data',
         slurm_f.write("#SBATCH --output %x.%j.stdout\n")
         slurm_f.write("#SBATCH --error %x.%j.stderr\n")
         slurm_f.write("\n")
-        slurm_f.write("cryolo_predict -c {} -w {} -i {} -o {} -t 0.3".format(config_fname, weights, mics_dir, output))
-        subprocess.run("sbatch cryolo.slurm", shell=True)
+        slurm_f.write("cryolo_predict.py -c {} -w {} -i {} -o {} -t 0.3".format(config_fname, weights, mics_dir, output))
     
 
 def main():
-    """
     job_folders = ['../Database/relion30_tutorial/Particles/Refine3D_job035',
                 '../Database/P166/Particles/Homo_J14',
                 '../Database/P171/Particles/Homo_J20',
@@ -163,25 +161,40 @@ def main():
                 '../Database/P190/Particles/Homo_J38',
                 '../Database/P192/Particles/Homo_J29']
     box_sizes = [300, 300, 300, 300, 300, 300, 300, 300]
-    cryolo_wrapper(job_folders = job_folders,
-            box_sizes = box_sizes)
+    cryolo_train_wrapper(job_folders = job_folders,
+            box_sizes = box_sizes,
+            config_fname = "cryolo_config_all_data.json",
+            saved_weights_name = "all_data_model.h5",
+            cryolo_output_folder = "all_data_cryolo_training")
+
+
     """
-    
     # Note: Should add more optional arguments depending on what the user wants.
     parser = argparse.ArgumentParser()
     parser.add_argument("task", help="Either 'train' or 'pick'")
-    parser.add_argument("--job_folders", help="List of file_crawler.py job folder outputs")
-    parser.add_argument("--box_sizes", help="List of box sizes to use for each job folder")
+    parser.add_argument("--job_folders", "-j", help="List of file_crawler.py job folder outputs", nargs="+")
+    parser.add_argument("--box_sizes", "-b", help="List of box sizes to use for each job folder", nargs="+")
+    parser.add_argument("--config", "-c", default="config_cryolo.json", help="Name of Cryolo config file")
+    parser.add_argument("--weights", "-w", default="cryolo_model.h5", help="Model to be used when training or picking")
+    parser.add_argument("--input", "-i", default="full_data/", help="Folder containing micrographs to pick from")
+    parser.add_argument("--output", "-o", default="output/", help="Folder containing training data or picked particles")
     args = parser.parse_args()
     
     if args.task == "train":
         assert(len(args.job_folders) == len(args.box_sizes))
         cryolo_train_wrapper(job_folders = args.job_folders,
-                box_sizes = [int(num) for num in args.box_sizes])
+                box_sizes = [int(num) for num in args.box_sizes],
+                config_fname = args.config,
+                saved_weights_name = args.weights,
+                cryolo_output_folder = args.output)
     elif args.task == "pick":
-        cryolo_pick_wrapper()
+        cryolo_pick_wrapper(config_fname = args.config,
+                weights = args.weights,
+                mics_dir = args.input,
+                output = args.output)
     else:
         raise Exception("Invalid task: choose to either 'train' a model or 'pick' particles.")
+    """
 
 if __name__ == '__main__':
     main()
