@@ -96,7 +96,6 @@ def cryolo_train_wrapper(job_folders=[], box_sizes=[], cryolo_output_folder='cry
     for i in range(len(job_folders)):
         job_folder = job_folders[i]
         box_size = box_sizes[i]
-        print("Parsing job: %s\n" % job_folder)
         convert_to_cryolo_training(particle_data_file=os.path.join(job_folder, 'data.txt'),
                                    box_size=box_size,
                                    output_image_folder=os.path.join(
@@ -117,7 +116,7 @@ def cryolo_train_wrapper(job_folders=[], box_sizes=[], cryolo_output_folder='cry
     # Don't do it directly from python
     # train_model(os.path.join(cryolo_output_folder, config_fname))
     # Consider automatically creating Slurm scripts and running them instead
-    script_path = os.path.join(cryolo_output_folder, 'cryolo.slurm')
+    script_path = os.path.join(cryolo_output_folder, 'cryolo_train.slurm')
     with open(script_path, 'w') as slurm_f:
         slurm_f.write("#!/usr/bin/env bash\n")
         slurm_f.write("\n")
@@ -130,13 +129,14 @@ def cryolo_train_wrapper(job_folders=[], box_sizes=[], cryolo_output_folder='cry
         slurm_f.write("#SBATCH --output %x.%j.stdout\n")
         slurm_f.write("#SBATCH --error %x.%j.stderr\n")
         slurm_f.write("\n")
+        slurm_f.write("source activate cryolo\n")
         slurm_f.write("cryolo_train.py -c {} -w 5".format(config_fname))
 
 
 def cryolo_pick_wrapper(config_fname='config_cryolo.json', mics_dir='full_data', weights='cryolo_model.h5', output='boxfiles'):
     # Wrapper function that creates a Slurm script based on the given picking parameters and begins picking particles.
 
-    with open('cryolo.slurm', 'w') as slurm_f:
+    with open('cryolo_pick.slurm', 'w') as slurm_f:
         slurm_f.write("#!/usr/bin/env bash\n")
         slurm_f.write("\n")
         slurm_f.write("#SBATCH --job-name cpick\n")
@@ -148,6 +148,7 @@ def cryolo_pick_wrapper(config_fname='config_cryolo.json', mics_dir='full_data',
         slurm_f.write("#SBATCH --output %x.%j.stdout\n")
         slurm_f.write("#SBATCH --error %x.%j.stderr\n")
         slurm_f.write("\n")
+        slurm_f.write("source activate cryolo\n")
         slurm_f.write("cryolo_predict.py -c {} -w {} -i {} -o {} -t 0.3".format(config_fname, weights, mics_dir, output))
     
 
