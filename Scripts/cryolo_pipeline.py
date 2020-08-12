@@ -161,13 +161,16 @@ def generate_relion_files(ctf_mics_star_file, cryolo_picks_dir):
         star_f.write('%s' % ctf_mics_star_file)
 
     os.mkdir(os.path.join('CryoloPick', 'Movies'))
-    shutil.copy(cryolo_picks_dir, 'CryoloPick/Movies/')
+    for filename in os.listdir(cryolo_picks_dir):
+        file_path = os.path.join(cryolo_picks_dir, filename)
+        if os.path.isfile(file_path):
+            shutil.copy(file_path, 'CryoloPick/Movies/')
 
     for filename in os.listdir('CryoloPick/Movies/'):
         old_f_path = os.path.join('CryoloPick/Movies/', filename)
         fname, ext = os.path.splitext(filename)
-        new_fname = fname + '_autopick'
-        new_f_path = os.path.join('CryoloPick/Movies/', new_fname, ext)
+        new_fname = fname + '_autopick' + ext
+        new_f_path = os.path.join('CryoloPick/Movies/', new_fname)
         os.rename(old_f_path, new_f_path)
 
 
@@ -202,9 +205,9 @@ def main():
     parser.add_argument("--weights", "-w", default="cryolo_model.h5", help="Model to be used when training or picking")
     parser.add_argument("--input", "-i", default="full_data/", help="Folder containing micrographs to pick from")
     parser.add_argument("--output", "-o", default="output/", help="Folder containing training data or picked particles")
-    parser.add_argument("--relion", action="store_true", help="After picking, automatically create necessary Relion files for particle extraction.
+    parser.add_argument("--relion", action="store_true", help="After picking, automatically create necessary Relion files for particle extraction. \
                     CTF star file of micrographs will need to be provided.")
-    parser.add_argument("--ctf-mics", help="CTF star file of micrographs used in picking. Provide path starting from Relion project folder.
+    parser.add_argument("--ctf-mics", help="CTF star file of micrographs used in picking. Provide path starting from Relion project folder. \
             Necessary argument when using output with Relion.")
     parser.add_argument("--csparc", action="store_true")
     args = parser.parse_args()
