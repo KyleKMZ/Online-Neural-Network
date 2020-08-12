@@ -150,9 +150,32 @@ def cryolo_pick_wrapper(config_fname='config_cryolo.json', mics_dir='full_data',
         slurm_f.write("\n")
         slurm_f.write("source activate cryolo\n")
         slurm_f.write("cryolo_predict.py -c {} -w {} -i {} -o {} -t 0.3".format(config_fname, weights, mics_dir, output))
+
+def generate_relion_files(ctf_mics_star_file, cryolo_picks_dir):
+    # Generate and reformat Cryolo output particles to conveniently use within Relion.
+    # Extraction would be the next step after picking with Cryolo.
+    if not os.path.exists('CryoloPick'):
+        os.mkdir('CryoloPick')
+
+    with open(os.path.join('CryoloPick', 'coords_suffix_autopick.star'), 'w') as star_f:
+        star_f.write('%s' % ctf_mics_star_file)
+
+    os.mkdir(os.path.join('CryoloPick', 'Movies'))
+    shutil.copy(cryolo_picks_dir, 'CryoloPick/Movies/')
+
+    for filename in os.listdir('CryoloPick/Movies/'):
+        old_f_path = os.path.join('CryoloPick/Movies/', filename)
+        fname, ext = os.path.splitext(filename)
+        new_fname = fname + '_autopick'
+        new_f_path = os.path.join('CryoloPick/Movies/', new_fname, ext)
+        os.rename(old_f_path, new_f_path)
+
+
     
 
 def main():
+
+    """
     job_folders = ['../Database/relion30_tutorial/Particles/Refine3D_job035',
                 '../Database/P166/Particles/Homo_J14',
                 '../Database/P171/Particles/Homo_J20',
@@ -167,9 +190,9 @@ def main():
             config_fname = "cryolo_config_all_data.json",
             saved_weights_name = "all_data_model.h5",
             cryolo_output_folder = "all_data_cryolo_training")
-
-
     """
+
+
     # Note: Should add more optional arguments depending on what the user wants.
     parser = argparse.ArgumentParser()
     parser.add_argument("task", help="Either 'train' or 'pick'")
@@ -179,6 +202,11 @@ def main():
     parser.add_argument("--weights", "-w", default="cryolo_model.h5", help="Model to be used when training or picking")
     parser.add_argument("--input", "-i", default="full_data/", help="Folder containing micrographs to pick from")
     parser.add_argument("--output", "-o", default="output/", help="Folder containing training data or picked particles")
+    parser.add_argument("--relion", action="store_true", help="After picking, automatically create necessary Relion files for particle extraction.
+                    CTF star file of micrographs will need to be provided.")
+    parser.add_argument("--ctf-mics", help="CTF star file of micrographs used in picking. Provide path starting from Relion project folder.
+            Necessary argument when using output with Relion.")
+    parser.add_argument("--csparc", action="store_true")
     args = parser.parse_args()
     
     if args.task == "train":
@@ -195,7 +223,6 @@ def main():
                 output = args.output)
     else:
         raise Exception("Invalid task: choose to either 'train' a model or 'pick' particles.")
-    """
 
 if __name__ == '__main__':
     main()
