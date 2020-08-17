@@ -149,6 +149,10 @@ def parse_csparc_project(dir_path, entry_name):
     particles_path = os.path.join(entry_path, 'Particles')
     os.makedirs(particles_path)
 
+    # Create hidden file to identify the project as data parsed from a Cryosparc project
+    with open(os.path.join(entry_path, ".csparc"), "w") as id_f:
+        pass
+
     # Handles manually picked particle data
     manual_dir_path_list = [os.path.join(dir_path, dir_name) for dir_name in os.listdir(dir_path) 
         if _csparc_job_type(os.path.join(dir_path, dir_name)) == 'manual_picker_particles']
@@ -233,6 +237,11 @@ def parse_relion_project(dir_path, entry_name):
     particles_path = os.path.join(entry_path, 'Particles')
     os.makedirs(particles_path)
 
+    # Create hidden file to identify the project as data parsed from a Relion project
+    with open(os.path.join(entry_path, ".relion"), "w") as id_f:
+        pass
+
+
     # (1) Handles manually picked particle data
     manual_pick_dir = os.path.join(dir_path, 'ManualPick')
     if os.path.isdir(manual_pick_dir):
@@ -307,13 +316,74 @@ def _get_particle_type(job_dir):
     particle_type  = particle_type.split('/')[0]
     return particle_type
 
+def _automatic_job_folder_selections(db_loc):
+    """
+    Automatically returns a list of locations of job folders to use as training
+    data for each database entry based on a hierarchical manner. 
 
+    For Relion projects: Refine3D_job* -> Select3D_job* -> Select2D_job*, where * is largest job number
+    For CSparc projects: Homo_J* -> Hetero_J* -> Select2D_J*, where * is largest job number
+    """
 
+    selected_job_folders = []
+
+    entries_loc = [os.path.join(db_loc, entry) for entry in os.listdir(db_loc)]
+    for entry in entries_loc:
+        if ".relion" in os.listdir(entry):
+            particles_dir = os.path.join(entry, "Particles")
+            job_folders = os.listdir(particles_dir)
+
+            refine3D_jobs = [job_name for job_name in job_folders if "Refine3D" in job_name]
+            select3D_jobs = [job_name for job_name in job_folders if "Select3D" in job_name]
+            select2D_jobs = [job_name for job_name in job_folders if "Select2D" in job_name]
+
+            if refine3D_jobs:
+                refine3D_jobs.sort()
+                refine3D_path = os.path.join(particles_dir, refine3D_jobs[-1])
+                selected_job_folders.append(refine3D_path)
+            elif select3D_jobs:
+                select3D_jobs.sort()
+                select3D_path = os.path.join(particles_dir, select3D_jobs[-1])
+                selected_job_folders.append(select3D_path)
+            elif select2D_jobs:
+                select2D_jobs.sort()
+                select2D_path = os.path.join(particles_dir, select2D_jobs[-1])
+                selected_job_folders.append(select2D_path)
+            else:
+                pass
+
+        elif ".csparc" in os.listdir(entry):
+            particles_dir = os.path.join(entry, "Particles")
+            job_folders = os.listdir(particles_dir)
+
+            homo_ref_jobs = [job_name for job_name in job_folders if "Homo" in job_name]
+            hetero_ref_jobs = [job_name for job_name in job_folders if "Hetero" in job_name]
+            select2D_jobs = [job_name for job_name in job_folders if "Select2D" in job_name]
+
+            if homo_ref_jobs:
+                homo_ref_jobs.sort()
+                homo_ref_path = os.path.join(particles_dir, homo_ref_jobs[-1])
+                selected_job_folders.append(homo_ref_path)
+            elif hetero_ref_jobs:
+                hetero_ref_jobs.sort()
+                hetero_ref_path = os.path.join(particles_dir, hetero_ref_jobs[-1])
+                selected_job_folders.append(hetero_ref_path)
+            elif select2D_jobs:
+                select2D_jobs.sort()
+                select2D_path = os.path.join(particles_dir, select2D_jobs[-1])
+                selected_job_folders.append(select2D_path)
+        else:
+            pass
+
+    return selected_job_folders
 
 
 def main():
     # for testing in the command-line as a script
-    parse_particles_cryoem_projects('/net/jiang/home/zaw/scratch/relion30_tutorial')
+    # parse_particles_cryoem_projects('/net/jiang/home/zaw/scratch/Structures/EMPIAR-10117_Adenovirus/')
+    # parse_particles_cryoem_projects('/net/jiang/home/zaw/scratch/Structures/EMPIAR-10202_AAV/')
+    print(_automatic_job_folder_selections('/net/jiang/home/zaw/scratch/Online-Neural-Network/Database/'))
+
 
 if __name__ == '__main__':
     main()
