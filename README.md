@@ -8,7 +8,7 @@
 ## (1) Parsing of CryoSparc and Relion projects 
 In CryoEM, the two most widely-used reconstruction programs are CryoSparc and Relion. The scripts in this collection allow for parsing of both CryoSparc and Relion projects. It parses a project directory to search for the following jobs that contain particle data that might be relevant and useful for training a neural network. It searches for the following jobs depending on project type.
 
-CryoSparc: Homogenous Refinement, Heterogeneous Refinement, Select2D, ManualPick
+CryoSparc: Homogenous Refinement, Heterogeneous Refinement, Select2D, ManualPick  
 Relion: 3D auto-fine, 3D classification, 2D Classification, Manual Picking
 
 The types of jobs we parse are actually identical in function, they just have different names due to differences between CryoSparc and Relion.
